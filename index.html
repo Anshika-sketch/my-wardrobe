@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Female Body Viewer</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #f9f9f9; }
+    #controls { padding: 1em; background: #fff; position: absolute; top: 0; left: 0; z-index: 10; width: 250px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+    #viewer { width: 100vw; height: 100vh; }
+    label { display: block; margin-top: 0.5em; font-weight: bold; }
+    input { width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <h3>Adjust Measurements (cm)</h3>
+    <label>Height: <input type="number" id="height" value="165" /></label>
+    <label>Chest: <input type="number" id="chest" value="85" /></label>
+    <label>Waist: <input type="number" id="waist" value="65" /></label>
+    <label>Hips: <input type="number" id="hips" value="92" /></label>
+    <button onclick="updateBody()">Update Model</button>
+  </div>
+  <div id="viewer"></div>
+
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three';
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader';
+    
+    let scene, camera, renderer, model;
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.getElementById('viewer').appendChild(renderer.domElement);
+
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+      scene.add(light);
+
+      camera.position.set(0, 1.5, 3);
+
+      const loader = new GLTFLoader();
+      loader.load('model/female_base.glb', function(gltf) {
+        model = gltf.scene;
+        model.scale.set(1, 1, 1);
+        scene.add(model);
+      });
+
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (model) model.rotation.y += 0.003;
+      renderer.render(scene, camera);
+    }
+
+    window.updateBody = function() {
+      const height = parseFloat(document.getElementById('height').value);
+      const chest = parseFloat(document.getElementById('chest').value);
+      const waist = parseFloat(document.getElementById('waist').value);
+      const hips = parseFloat(document.getElementById('hips').value);
+
+      if (model) {
+        const baseScale = height / 165;
+        model.scale.set(baseScale, baseScale, baseScale);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
